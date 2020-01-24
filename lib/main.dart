@@ -20,6 +20,9 @@ class _HomeState extends State<Home> {
 
   @override
   List _toDoList = [];
+  Map<String, dynamic> _lastRemoved;
+  int _lastRemovedPosition;
+
 
   @override
   void initState() {
@@ -90,6 +93,31 @@ class _HomeState extends State<Home> {
 
   Widget buildItem(context, index) {
     return Dismissible(
+      onDismissed: (direction){
+        setState(() {
+          _lastRemoved = Map.from(_toDoList[index]);
+          _lastRemovedPosition = index;
+          _toDoList.removeAt(index);
+
+          _saveData();
+
+          final snack = SnackBar(
+            content: Text("Tarefa \"${_lastRemoved["title"]}\" removida!"),
+            action: SnackBarAction(
+              label: "Desfazer",
+              onPressed: (){
+                setState(() {
+                  _toDoList.insert(_lastRemovedPosition, _lastRemoved);
+                  _saveData();
+                });
+                },
+            ),
+            duration: Duration(seconds: 3),
+          );
+
+          Scaffold.of(context).showSnackBar(snack);
+        });
+      },
       key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
         background: Container(
           color: Colors.red,
